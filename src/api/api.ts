@@ -1,11 +1,4 @@
-import axios from "axios";
-
-const BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
-
-const client = axios.create({
-  baseURL: BASE_URL,
-  headers: { "Content-Type": "application/json" },
-});
+import { supabase } from "@/lib/supabase";
 
 export interface Employee {
   employee_id: string;
@@ -20,16 +13,55 @@ export interface AttendanceRecord {
   status: "Present" | "Absent";
 }
 
-export const getEmployees = () => client.get<Employee[]>("/employees");
+export const getEmployees = async () => {
+  const { data, error } = await supabase
+    .from("employees")
+    .select("employee_id, full_name, email, department")
+    .order("created_at", { ascending: false });
 
-export const addEmployee = (data: Omit<Employee, "employee_id"> & { employee_id: string }) =>
-  client.post<Employee>("/employees", data);
+  if (error) throw error;
+  return { data: data || [] };
+};
 
-export const deleteEmployee = (employee_id: string) =>
-  client.delete(`/employees/${employee_id}`);
+export const addEmployee = async (employee: Employee) => {
+  const { data, error } = await supabase
+    .from("employees")
+    .insert([employee])
+    .select("employee_id, full_name, email, department")
+    .single();
 
-export const markAttendance = (data: AttendanceRecord) =>
-  client.post("/attendance", data);
+  if (error) throw error;
+  return { data };
+};
 
-export const getAttendance = (employee_id: string) =>
-  client.get<AttendanceRecord[]>(`/attendance/${employee_id}`);
+export const deleteEmployee = async (employee_id: string) => {
+  const { error } = await supabase
+    .from("employees")
+    .delete()
+    .eq("employee_id", employee_id);
+
+  if (error) throw error;
+  return { data: null };
+};
+
+export const markAttendance = async (attendance: AttendanceRecord) => {
+  const { data, error } = await supabase
+    .from("attendance")
+    .insert([attendance])
+    .select()
+    .single();
+
+  if (error) throw error;
+  return { data };
+};
+
+export const getAttendance = async (employee_id: string) => {
+  const { data, error } = await supabase
+    .from("attendance")
+    .select("employee_id, date, status")
+    .eq("employee_id", employee_id)
+    .order("date", { ascending: false });
+
+  if (error) throw error;
+  return { data: data || [] };
+};

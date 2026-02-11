@@ -9,7 +9,7 @@ const Dashboard = () => {
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [totalAttendance, setTotalAttendance] = useState(0);
   const [presentCount, setPresentCount] = useState(0);
-  const [absentCount, setAbsentCount] = useState(0);
+  const [_absentCount, setAbsentCount] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
 
